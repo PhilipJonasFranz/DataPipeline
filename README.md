@@ -1,5 +1,7 @@
 # DataPipeline [![version](https://img.shields.io/badge/0.0.1-grey.svg)](https://semver.org) [![status](https://img.shields.io/badge/development-red.svg)](https://semver.org)
 
+*This little project is mainly used to experiment with Apache Camel-flavoured Builders and Pipelines, dont expect anything revolutionary.*
+
 The data pipeline allows configuring modular blocks into complex workflows and run said workflows with input data from various input sources.
 
 The pipeline consists out of statements, which can perform operations on the current data element or can branch the control flow in the pipeline. Statements can even trigger other pipelines with the current data element. Conditional statements also have conditions, which are configurable building blocks as well. While conditions can only be inserted at some locations, statements can be used everywhere.
