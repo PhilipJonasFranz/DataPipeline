@@ -6,6 +6,7 @@ The pipeline consists out of statements, which can perform operations on the cur
 
 ## Contents
 
+- [Example](#example)
 - [Built in Functionality](#built-in-functionality)
 
 ## Example
