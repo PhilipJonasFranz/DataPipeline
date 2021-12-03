@@ -48,6 +48,13 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
         return this;
     }
 
+    public <O> PipelineStatementBuilder<O> Custom(PipelineElement<I> custom) {
+        this.elements.pop().next = custom;
+        this.elements.push(custom);
+
+        return new PipelineStatementBuilder<>(this.head, this.elements);
+    }
+
     public <O> PipelineStatementBuilder<O> Map(FMapper<I, O> functionalMapper) {
         MapperStatement<I, O> mapperStatement = new MapperStatement<>(functionalMapper);
 

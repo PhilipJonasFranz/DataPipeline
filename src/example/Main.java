@@ -1,3 +1,5 @@
+package example;
+
 import pipeline.statement.PipelineElement;
 import pipeline.statement.PipelineStatementBuilder;
 
@@ -23,6 +25,7 @@ public class Main {
 
         new PipelineStatementBuilder<Integer>()
                 .Label("processor")
+                .<Integer>Custom(new VeryEmptyStatement<>())
                 .Map(Integer::doubleValue)
                 .Do(System.out::println)
                 .Build();
