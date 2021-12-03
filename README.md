@@ -38,7 +38,7 @@ public class Main {
                 .Log(x -> x)
                 .Build();
       
-        pipeline.run(args);
+        pipeline.run(List.of(1, 10, 100, 1000));
     }
 }
 ```
@@ -76,3 +76,6 @@ The following section gives a brief overview over the built-in statements and co
  | `Repeat(int)`    | This condition returns true `n` times for a given element      | Condition         |
  | `Then()`         | Ends the condition builder to resume with defining statements  | Statement         |
  
+## Running the Pipeline
+
+Using the Builder, after the pipeline is configured the `.Build()` method in the Builder will return the head statement of the pipeline. The pipeline can now be run using `pipeline.run(...)`. Multiple input formats are available. The pipeline can be run asynchronously on a new Thread using `pipeline.runAsync(...)`.
