@@ -13,27 +13,31 @@ The pipeline consists out of statements, which can perform operations on the cur
 The following example shows a pipeline that utilizes most of the included pipeline statements and conditions. For more information on the included elements take a look at the [Documentation](#built-in-functionality).
 
 ```java
-PipelineElement<Integer> pipeline = new PipelineStatementBuilder<Integer>()
-    .Label("entry")
-    .Comment("Start of the pipeline")
-    .Map(Object::toString)
-    .Map(String::length)
-    .For().Repeat(2).Then()
-        .If().Any().Dynamic(x -> x == 3).Static(false).End().Then()
-            .Do(x -> System.out.println("Hi: " + x))
-        .End(x -> (Integer) x)
-        .Do(System.out::println)
-    .End()
-    .To("processor").Build();
-  
-new PipelineStatementBuilder<Integer>()
-    .Label("processor")
-    .<Integer>Custom(new VeryEmptyStatement<>())
-    .Map(Integer::doubleValue)
-    .Do(System.out::println)
-    .Build();
-
-pipeline.run(List.of(1, 10, 100, 1000));
+public class Main {
+    public static void main(String[] args) {
+        PipelineElement<Integer> pipeline = new PipelineStatementBuilder<Integer>()
+                .Label("entry")
+                .Comment("Start of the pipeline")
+                .Map(Object::toString)
+                .Log(x -> x)
+                .Map(String::length)
+                .For().Repeat(2).Then()
+                     .If().Any().Dynamic(x -> x == 3).Static(false).End().Then()
+                         .Do(x -> System.out.println("Hi: " + x))
+                     .End(x -> (Integer) x)
+                .End()
+                .To("processor").Build();
+      
+        new PipelineStatementBuilder<Integer>()
+                .Label("processor")
+                .<Integer>Custom(new VeryEmptyStatement<>())
+                .Map(Integer::doubleValue)
+                .Log(x -> x)
+                .Build();
+      
+        pipeline.run(args);
+    }
+}
 ```
 
 ## Built in Functionality
@@ -52,7 +56,11 @@ The following section gives a brief overview over the built-in statements and co
  | `Label(String)`  | Defines this statement as a receiver of `To(String)` statements| Statement         |
  | `To(String)`     | Sends the current element to a `Label(String)` statement       | Statement         |
  | `Custom(PipelineStatement)`| Allows plugging in a custom pipeline statement       | Statement         |
- 
+ | `Log(String)`    | Logs the given string to `System.out`                          | Statement         |
+ | `Log(FMapper)`   | Uses the mapper to map to String and log to `System.out`       | Statement         |
+ | `Log(PrintStream, String)`| Logs the given string to given print stream           | Statement         |
+ | `Log(PrintStream, FMapper)`| Uses the mapper to map to String and log to given print stream| Statement         |
+
 ### Conditions
 
  |    Create with   |        Functionality                                           |   Continued with  |

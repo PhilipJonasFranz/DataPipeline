@@ -3,34 +3,34 @@ package example;
 import pipeline.statement.PipelineStatement;
 import pipeline.statement.PipelineStatementBuilder;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.List;
 
 public class Main {
 
     public static void main(String[]args) {
-        List<Integer> input = List.of(1, 10, 100, 1000);
-
-        PipelineStatement<Integer> pipeline = new PipelineStatementBuilder<Integer>()
+        PipelineStatement<Integer> pipeline = PipelineStatement.<Integer>builder()
                 .Label("entry")
                 .Comment("Start of the pipeline")
                 .Map(Object::toString)
                 .Map(String::length)
                 .For().Repeat(2).Then()
-                    .If().Dynamic(x -> x == 3).Then()
-                        .Do(x -> System.out.println("Hi: " + x))
+                    .If().Any().Dynamic(x -> x == 3).Static(false).End().Then()
+                        .Log(x -> "Hi: " + x)
                     .End(x -> (Integer) x)
-                    .Do(System.out::println)
+                    .Log(Object::toString)
                 .End()
                 .To("processor").Build();
 
-        new PipelineStatementBuilder<Integer>()
+        PipelineStatement.<Integer>builder()
                 .Label("processor")
                 .<Integer>Custom(new VeryEmptyStatement<>())
                 .Map(Integer::doubleValue)
-                .Do(System.out::println)
+                .Log(Object::toString)
                 .Build();
 
-        pipeline.run(input);
+        pipeline.runAsync(List.of(1, 10, 100, 1000));
     }
 
 }

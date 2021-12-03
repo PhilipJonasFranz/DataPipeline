@@ -6,6 +6,7 @@ import pipeline.interfaces.FMapper;
 import pipeline.condition.PipelineConditionBuilder;
 import pipeline.routing.PipelineRegistry;
 
+import java.io.PrintStream;
 import java.util.Stack;
 
 public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
@@ -30,22 +31,13 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
 
     public PipelineStatementBuilder<I> Label(String endpoint) {
         FromStatement<I> from = new FromStatement<>(endpoint);
-
-        this.elements.pop().next = from;
-        this.elements.push(from);
-
         PipelineRegistry.getInstance().registerPipeline(from);
 
-        return this;
+        return this.add(from);
     }
 
     public PipelineStatementBuilder<I> To(String endpoint) {
-        ToStatement<I> to = new ToStatement<>(endpoint);
-
-        this.elements.pop().next = to;
-        this.elements.push(to);
-
-        return this;
+        return this.add(new ToStatement<>(endpoint));
     }
 
     /**
@@ -54,10 +46,7 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
      * @param <O> The output type of the statement.
      */
     public <O> PipelineStatementBuilder<O> Custom(PipelineStatement<I> custom) {
-        this.elements.pop().next = custom;
-        this.elements.push(custom);
-
-        return new PipelineStatementBuilder<>(this.head, this.elements);
+        return this.addT(custom);
     }
 
     /**
@@ -66,12 +55,7 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
      * @param <O> The output type of the mapper.
      */
     public <O> PipelineStatementBuilder<O> Map(FMapper<I, O> functionalMapper) {
-        MapperStatement<I, O> mapperStatement = new MapperStatement<>(functionalMapper);
-
-        this.elements.pop().next = mapperStatement;
-        this.elements.push(mapperStatement);
-
-        return new PipelineStatementBuilder<>(this.head, this.elements);
+        return this.addT(new MapperStatement<>(functionalMapper));
     }
 
     /**
@@ -79,12 +63,23 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
      * @param lambda The lambda to do the operation on/with the element.
      */
     public PipelineStatementBuilder<I> Do(FLambda<I> lambda) {
-        LambdaStatement<I> doBlock = new LambdaStatement<>(lambda);
+        return this.add(new LambdaStatement<>(lambda));
+    }
 
-        this.elements.pop().next = doBlock;
-        this.elements.push(doBlock);
+    public PipelineStatementBuilder<I> Log(FMapper<I, String> mapper) {
+        return this.add(new LogStatement<>(System.out, mapper));
+    }
 
-        return this;
+    public PipelineStatementBuilder<I> Log(String message) {
+        return this.add(new LogStatement<>(System.out, x -> message));
+    }
+
+    public PipelineStatementBuilder<I> Log(PrintStream out, FMapper<I, String> mapper) {
+        return this.add(new LogStatement<>(out, mapper));
+    }
+
+    public PipelineStatementBuilder<I> Log(PrintStream out, String message) {
+        return this.add(new LogStatement<>(out, x -> message));
     }
 
     /**
@@ -182,6 +177,18 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
     public void closeCondition(PipelineConditionBuilder<I> builder) {
         ConditionalStatement<I> cond = (ConditionalStatement<I>) this.elements.peek();
         cond.condition = builder.getCond();
+    }
+
+    private PipelineStatementBuilder<I> add(PipelineStatement<I> statement) {
+        this.elements.pop().next = statement;
+        this.elements.push(statement);
+        return this;
+    }
+
+    private <O> PipelineStatementBuilder<O> addT(PipelineStatement<I> statement) {
+        this.elements.pop().next = statement;
+        this.elements.push(statement);
+        return new PipelineStatementBuilder<>(this.head, this.elements);
     }
 
 }
