@@ -1,6 +1,7 @@
 package pipeline.condition;
 
 import pipeline.AbstractPipelineBuilder;
+import pipeline.exception.MalformedConditionException;
 import pipeline.interfaces.FMapper;
 import pipeline.statement.PipelineStatementBuilder;
 
@@ -71,6 +72,9 @@ public class PipelineConditionBuilder<I> extends AbstractPipelineBuilder<I> {
     }
 
     public PipelineConditionBuilder<I> End() {
+        if (this.operators.isEmpty() || this.conditionStack.isEmpty())
+            throw new MalformedConditionException();
+
         List<PipelineCondition<I>> conditions = conditionStack.pop();
         OP operator = operators.pop();
 

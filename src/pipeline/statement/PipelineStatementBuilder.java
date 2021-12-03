@@ -1,6 +1,7 @@
 package pipeline.statement;
 
 import pipeline.AbstractPipelineBuilder;
+import pipeline.exception.MalformedPipelineException;
 import pipeline.interfaces.FLambda;
 import pipeline.interfaces.FMapper;
 import pipeline.condition.PipelineConditionBuilder;
@@ -29,6 +30,11 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
         this.elements = elements;
     }
 
+    /**
+     * Labels this pipeline statement so it can be targeted by other pipeline statements
+     * with {@link #To(String)}.
+     * @param endpoint The Key for this endpoint. Must be unique across all other labels.
+     */
     public PipelineStatementBuilder<I> Label(String endpoint) {
         FromStatement<I> from = new FromStatement<>(endpoint);
         PipelineRegistry.getInstance().registerPipeline(from);
@@ -36,6 +42,12 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
         return this.add(from);
     }
 
+    /**
+     * Sends the current element to the pipeline statement that is labeled with the given
+     * endpoint string. If the endpoint does not exist, an exception is thrown. After the
+     * pipeline exits, the current pipeline resumes execution at the location it left off.
+     * @param endpoint The pipeline label that is defined in a {@link #Label(String)} statement.
+     */
     public PipelineStatementBuilder<I> To(String endpoint) {
         return this.add(new ToStatement<>(endpoint));
     }
@@ -66,18 +78,32 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
         return this.add(new LambdaStatement<>(lambda));
     }
 
+    /**
+     * Creates a log message based on the current element. A mapper creates the message
+     * as a string. The message is logged to System.out.
+     */
     public PipelineStatementBuilder<I> Log(FMapper<I, String> mapper) {
         return this.add(new LogStatement<>(System.out, mapper));
     }
 
+    /**
+     * Logs the given message to System.out.
+     */
     public PipelineStatementBuilder<I> Log(String message) {
         return this.add(new LogStatement<>(System.out, x -> message));
     }
 
+    /**
+     * Creates a log message based on the current element. A mapper creates the message
+     * as a string. The message is logged to the given PrintStream.
+     */
     public PipelineStatementBuilder<I> Log(PrintStream out, FMapper<I, String> mapper) {
         return this.add(new LogStatement<>(out, mapper));
     }
 
+    /**
+     * Logs the given message to the given PrintStream.
+     */
     public PipelineStatementBuilder<I> Log(PrintStream out, String message) {
         return this.add(new LogStatement<>(out, x -> message));
     }
@@ -105,16 +131,6 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
         return new PipelineConditionBuilder<>(this);
     }
 
-    private void handleConditional(ConditionalStatement<I> cond) {
-        EmptyStatement<I> empty = new EmptyStatement<>();
-        empty.next = cond;
-
-        this.elements.pop().next = empty;
-
-        this.elements.push(empty);
-        this.elements.push(cond);
-    }
-
     /**
      * Closes a scope opened by a conditional statement. Inserts an empty statement
      * that casts different types that arrive from different pipeline statements to
@@ -138,7 +154,36 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
         return new PipelineStatementBuilder<>(this.head, this.elements);
     }
 
+    /**
+     * Inserts a comment at this point in the pipeline. Does not modify the pipeline.
+     * @param comment The comment to insert.
+     */
+    public PipelineStatementBuilder<I> Comment(String comment) {
+        return this;
+    }
+
+    /**
+     * Returns the entry to the pipeline.
+     * @param <O> The type the entry elements to the pipeline have.
+     */
+    public <O> PipelineStatement<O> Build() {
+        return this.head;
+    }
+
+    private void handleConditional(ConditionalStatement<I> cond) {
+        EmptyStatement<I> empty = new EmptyStatement<>();
+        empty.next = cond;
+
+        this.elements.pop().next = empty;
+
+        this.elements.push(empty);
+        this.elements.push(cond);
+    }
+
     private void handleConditional(PipelineStatement element) {
+        if (this.elements.size() < 2)
+            throw new MalformedPipelineException();
+
         PipelineStatement content = this.elements.pop();
         EmptyStatement empty = (EmptyStatement) this.elements.pop();
 
@@ -156,22 +201,6 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
         }
 
         elements.push(element);
-    }
-
-    /**
-     * Inserts a comment at this point in the pipeline. Does not modify the pipeline.
-     * @param comment The comment to insert.
-     */
-    public PipelineStatementBuilder<I> Comment(String comment) {
-        return this;
-    }
-
-    /**
-     * Returns the entry to the pipeline.
-     * @param <O> The type the entry elements to the pipeline have.
-     */
-    public <O> PipelineStatement<O> Build() {
-        return this.head;
     }
 
     public void closeCondition(PipelineConditionBuilder<I> builder) {
