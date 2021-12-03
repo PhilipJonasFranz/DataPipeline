@@ -2,9 +2,9 @@ package pipeline.statement;
 
 import pipeline.routing.PipelineRegistry;
 
-public class ToStatement<I> extends PipelineElement<I> {
+public class ToStatement<I> extends PipelineStatement<I> {
 
-    public PipelineElement connectedEndpoint;
+    public PipelineStatement connectedEndpoint;
 
     private String endpoint;
 

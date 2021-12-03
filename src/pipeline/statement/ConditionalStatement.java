@@ -2,11 +2,11 @@ package pipeline.statement;
 
 import pipeline.condition.PipelineCondition;
 
-public class ConditionalStatement<I> extends PipelineElement<I> {
+public class ConditionalStatement<I> extends PipelineStatement<I> {
 
     public PipelineCondition<I> condition;
 
-    public PipelineElement<I> ifTruePass;
+    public PipelineStatement<I> ifTruePass;
 
     public ConditionalStatement(PipelineCondition<I> condition) {
         this.condition = condition;

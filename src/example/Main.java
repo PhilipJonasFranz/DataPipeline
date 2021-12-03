@@ -1,6 +1,6 @@
 package example;
 
-import pipeline.statement.PipelineElement;
+import pipeline.statement.PipelineStatement;
 import pipeline.statement.PipelineStatementBuilder;
 
 import java.util.List;
@@ -10,7 +10,7 @@ public class Main {
     public static void main(String[]args) {
         List<Integer> input = List.of(1, 10, 100, 1000);
 
-        PipelineElement<Integer> pipeline = new PipelineStatementBuilder<Integer>()
+        PipelineStatement<Integer> pipeline = new PipelineStatementBuilder<Integer>()
                 .Label("entry")
                 .Comment("Start of the pipeline")
                 .Map(Object::toString)

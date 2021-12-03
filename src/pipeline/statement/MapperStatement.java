@@ -2,7 +2,7 @@ package pipeline.statement;
 
 import pipeline.interfaces.FMapper;
 
-public class MapperStatement<I, O> extends PipelineElement<I> {
+public class MapperStatement<I, O> extends PipelineStatement<I> {
 
     public FMapper<I, O> mapper;
 

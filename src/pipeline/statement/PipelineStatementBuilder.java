@@ -10,9 +10,9 @@ import java.util.Stack;
 
 public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
 
-    public PipelineElement head;
+    public PipelineStatement head;
 
-    private Stack<PipelineElement> elements = new Stack<>();
+    private Stack<PipelineStatement> elements = new Stack<>();
 
     public PipelineStatementBuilder() {
         super(null);
@@ -21,7 +21,7 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
         this.elements.push(head);
     }
 
-    private PipelineStatementBuilder(PipelineElement head, Stack<PipelineElement> elements) {
+    private PipelineStatementBuilder(PipelineStatement head, Stack<PipelineStatement> elements) {
         super(null);
 
         this.head = head;
@@ -48,13 +48,23 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
         return this;
     }
 
-    public <O> PipelineStatementBuilder<O> Custom(PipelineElement<I> custom) {
+    /**
+     * Allows plugging in a custom pipeline statement.
+     * @param custom The custom pipeline statement.
+     * @param <O> The output type of the statement.
+     */
+    public <O> PipelineStatementBuilder<O> Custom(PipelineStatement<I> custom) {
         this.elements.pop().next = custom;
         this.elements.push(custom);
 
         return new PipelineStatementBuilder<>(this.head, this.elements);
     }
 
+    /**
+     * Maps an element to a different type using the provided FMapper interface.
+     * @param functionalMapper The mapper that performs the transformation.
+     * @param <O> The output type of the mapper.
+     */
     public <O> PipelineStatementBuilder<O> Map(FMapper<I, O> functionalMapper) {
         MapperStatement<I, O> mapperStatement = new MapperStatement<>(functionalMapper);
 
@@ -64,6 +74,10 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
         return new PipelineStatementBuilder<>(this.head, this.elements);
     }
 
+    /**
+     * Performs an operation for a given element. Does not change the elements type.
+     * @param lambda The lambda to do the operation on/with the element.
+     */
     public PipelineStatementBuilder<I> Do(FLambda<I> lambda) {
         LambdaStatement<I> doBlock = new LambdaStatement<>(lambda);
 
@@ -129,8 +143,8 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
         return new PipelineStatementBuilder<>(this.head, this.elements);
     }
 
-    private void handleConditional(PipelineElement element) {
-        PipelineElement content = this.elements.pop();
+    private void handleConditional(PipelineStatement element) {
+        PipelineStatement content = this.elements.pop();
         EmptyStatement empty = (EmptyStatement) this.elements.pop();
 
         if (empty.next instanceof IfStatement cond) {
@@ -161,7 +175,7 @@ public class PipelineStatementBuilder<I> extends AbstractPipelineBuilder<I> {
      * Returns the entry to the pipeline.
      * @param <O> The type the entry elements to the pipeline have.
      */
-    public <O> PipelineElement<O> Build() {
+    public <O> PipelineStatement<O> Build() {
         return this.head;
     }
 

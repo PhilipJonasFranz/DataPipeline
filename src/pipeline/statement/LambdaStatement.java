@@ -2,7 +2,7 @@ package pipeline.statement;
 
 import pipeline.interfaces.FLambda;
 
-public class LambdaStatement<I> extends PipelineElement<I> {
+public class LambdaStatement<I> extends PipelineStatement<I> {
 
     public FLambda<I> lambda;
 

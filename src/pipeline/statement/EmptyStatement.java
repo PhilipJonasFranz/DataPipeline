@@ -1,6 +1,6 @@
 package pipeline.statement;
 
-public class EmptyStatement<I> extends PipelineElement<I> {
+public class EmptyStatement<I> extends PipelineStatement<I> {
 
     @Override
     public void run(Object in0) {

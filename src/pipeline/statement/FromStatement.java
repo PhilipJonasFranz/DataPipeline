@@ -1,6 +1,6 @@
 package pipeline.statement;
 
-public class FromStatement<I> extends PipelineElement<I> {
+public class FromStatement<I> extends PipelineStatement<I> {
 
     public String endpoint;
 

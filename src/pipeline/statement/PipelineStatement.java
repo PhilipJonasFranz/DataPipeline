@@ -2,9 +2,9 @@ package pipeline.statement;
 
 import java.util.List;
 
-public abstract class PipelineElement<I> {
+public abstract class PipelineStatement<I> {
 
-    public PipelineElement<?> next;
+    public PipelineStatement<?> next;
 
     public abstract void run(Object in);
 
